@@ -1,2 +1,2 @@
 # project
-this is our project
+这是一个源码解读的项目，主要包括各种架构梳理
