@@ -1,7 +1,9 @@
 package com.demo;
 
+import javax.management.monitor.Monitor;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author linhua
@@ -11,9 +13,23 @@ import java.util.Map;
 
 public class HashMapTest {
     public static void main(String[] args) {
+        //我们研究一下一切皆对象
+        Object o = new Object();
+        Monitor monitor = new Monitor() {
+            @Override
+            public void start() {
+                System.out.println("start \n");
+            }
+
+            @Override
+            public void stop() {
+                System.out.println("end \n");
+            }
+        };
 
 
-        HashMap<String, Integer> map = new HashMap<>(16,1);
+        Map<String, Integer> map = new HashMap<>(16,1);
+        map = new ConcurrentHashMap<>();
         Integer previous = map.put("test1", 1);
         System.out.println(previous);
         System.out.println("\n");
