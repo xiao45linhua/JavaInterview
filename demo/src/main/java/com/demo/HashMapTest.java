@@ -12,6 +12,25 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 
 public class HashMapTest {
+
+
+    // Unsafe mechanics
+    private static final sun.misc.Unsafe U;
+
+    private transient volatile int sizeCtl;
+
+    static {
+        try {
+            U = sun.misc.Unsafe.getUnsafe();
+            Class<?> k = ConcurrentHashMap.class;
+
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
+
+
+
     public static void main(String[] args) {
         //我们研究一下一切皆对象
         Object o = new Object();
@@ -26,7 +45,6 @@ public class HashMapTest {
                 System.out.println("end \n");
             }
         };
-
 
         Map<String, Integer> map = new HashMap<>(16,1);
         map = new ConcurrentHashMap<>();

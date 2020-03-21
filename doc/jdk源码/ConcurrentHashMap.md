@@ -109,3 +109,42 @@
         return U.compareAndSwapObject(tab, ((long)i << ASHIFT) + ABASE, c, v);
     }
 ```
+
+````java
+/**
+ * Helps transfer if a resize is in progress.
+ */
+final Node<K,V>[] helpTransfer(Node<K,V>[] tab, Node<K,V> f) {
+    Node<K,V>[] nextTab; int sc;
+    // 如果 table 不是空 且 node 节点是转移类型，数据检验
+    // 且 node 节点的 nextTable（新 table） 不是空，同样也是数据校验
+    // 尝试帮助扩容
+    if (tab != null && (f instanceof ForwardingNode) &&
+        (nextTab = ((ForwardingNode<K,V>)f).nextTable) != null) {
+        // 根据 length 得到一个标识符号
+        int rs = resizeStamp(tab.length);
+        // 如果 nextTab 没有被并发修改 且 tab 也没有被并发修改
+        // 且 sizeCtl  < 0 （说明还在扩容）
+        while (nextTab == nextTable && table == tab &&
+               (sc = sizeCtl) < 0) {
+            // 如果 sizeCtl 无符号右移  16 不等于 rs （ sc前 16 位如果不等于标识符，则标识符变化了）
+            // 或者 sizeCtl == rs + 1  （扩容结束了，不再有线程进行扩容）（默认第一个线程设置 sc ==rs 左移 16 位 + 2，当第一个线程结束扩容了，就会将 sc 减一。这个时候，sc 就等于 rs + 1）
+            // 或者 sizeCtl == rs + 65535  （如果达到最大帮助线程的数量，即 65535）
+            // 或者转移下标正在调整 （扩容结束）
+            // 结束循环，返回 table
+            if ((sc >>> RESIZE_STAMP_SHIFT) != rs || sc == rs + 1 ||
+                sc == rs + MAX_RESIZERS || transferIndex <= 0)
+                break;
+            // 如果以上都不是, 将 sizeCtl + 1, （表示增加了一个线程帮助其扩容）
+            if (U.compareAndSwapInt(this, SIZECTL, sc, sc + 1)) {
+                // 进行转移
+                transfer(tab, nextTab);
+                // 结束循环
+                break;
+            }
+        }
+        return nextTab;
+    }
+    return table;
+}
+````
